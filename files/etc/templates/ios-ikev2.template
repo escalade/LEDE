@@ -1,0 +1,117 @@
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Set the name to whatever you like, it is used in the profile list on the device -->
+    <key>PayloadDisplayName</key>
+    <string>OpenWrt strongSwan</string>
+    <!-- This is a reverse-DNS style unique identifier used to detect duplicate profiles -->
+    <key>PayloadIdentifier</key>
+    <string>org.openwrt.strongswan</string>
+    <!-- A globally unique identifier, use uuidgen on Linux/Mac OS X to generate it -->
+    <key>PayloadUUID</key>
+    <string>6a496641-3ef0-4fa1-9009-7194c9cdeb80</string>
+    <key>PayloadType</key>
+    <string>Configuration</string>
+    <key>PayloadVersion</key>
+    <integer>1</integer>
+    <key>PayloadContent</key>
+    <array>
+        <!-- It is possible to add multiple VPN payloads with different identifiers/UUIDs and names -->
+        <dict>
+            <!-- This is an extension of the identifier given above -->
+            <key>PayloadIdentifier</key>
+            <string>org.openwrt.strongswan.conf</string>
+            <!-- A globally unique identifier for this payload -->
+            <key>PayloadUUID</key>
+            <string>12e8c605-a263-40a0-98dd-8874724208db</string>
+            <key>PayloadType</key>
+            <string>com.apple.vpn.managed</string>
+            <key>PayloadVersion</key>
+            <integer>1</integer>
+            <!-- This is the name of the VPN connection as seen in the VPN application later --> 
+	    <key>UserDefinedName</key>
+            <string>strongSwan IKEv2</string>
+            <key>VPNType</key>
+            <string>IKEv2</string>
+            <key>IKEv2</key>
+            <dict>
+                <!-- Hostname or IP address of the VPN server -->
+                <key>RemoteAddress</key>
+                <string>WANIP</string>
+                <!-- Remote identity, can be a FQDN, a userFQDN, an IP or (theoretically) a certificate's subject DN. Can't be empty.
+                     IMPORTANT: DNs are currently not handled correctly, they are always sent as identities of type FQDN -->
+                <key>RemoteIdentifier</key>
+                <string>WANIP</string>
+                <!-- Local IKE identity, same restrictions as above. If it is empty the client's IP address will be used -->
+                <key>LocalIdentifier</key>
+                <string>CLIENTNAME</string>
+                <!-- Optional, if it matches the CN of the root CA certificate (not the full subject DN) a certificate request will be sent
+                     NOTE: If this is not configured make sure to configure leftsendcert=always on the server, otherwise it won't send its certificate -->
+                <key>ServerCertificateIssuerCommonName</key>
+                <string></string>
+                <!-- Optional, the CN or one of the subjectAltNames of the server certificate to verify it, if not set RemoteIdentifier will be used -->
+                <key>ServerCertificateCommonName</key>
+                <string></string>
+                <!-- The server is authenticated using a certificate -->
+                <key>AuthenticationMethod</key>
+                <string>Certificate</string>
+                <!-- The client uses EAP to authenticate -->
+                <key>ExtendedAuthEnabled</key>
+                <integer>1</integer>
+                <key>PayloadCertificateUUID</key>                                                      
+                <string>d60488c6-328e-4944-9c8d-61db8095c864</string>                                               
+                <!-- The next two dictionaries are optional (as are the keys in them), but it is recommended to specify them as the default is to use 3DES.
+                     IMPORTANT: Because only one proposal is sent (even if nothing is configured here) it must match the server configuration -->
+                <key>IKESecurityAssociationParameters</key>
+                <dict>
+                    <key>EncryptionAlgorithm</key>
+                    <string>AES-128</string>
+                    <key>IntegrityAlgorithm</key>
+                    <string>SHA1-96</string>
+                    <key>DiffieHellmanGroup</key>
+                    <integer>14</integer>
+                </dict>
+                <key>ChildSecurityAssociationParameters</key>
+                <dict>
+                    <key>EncryptionAlgorithm</key>
+                    <string>AES-128</string>
+                    <key>IntegrityAlgorithm</key>
+                    <string>SHA1-96</string>
+                    <key>DiffieHellmanGroup</key>
+                    <integer>14</integer>
+                </dict>
+            </dict>
+        </dict>
+        <dict>
+            <key>PayloadIdentifier</key>
+            <string>org.openwrt.strongswan.CLIENTNAME</string>
+            <key>PayloadUUID</key>
+            <string>d60488c6-328e-4944-9c8d-61db8095c864</string>
+            <key>PayloadType</key>
+            <string>com.apple.security.pkcs12</string>
+            <key>PayloadVersion</key>
+            <integer>1</integer>
+            <key>Password</key>
+            <string>P12PASS</string>
+            <!-- This is the Base64 encoded PKCS#12 container with the certificate and private key for the client.
+                 IMPORTANT: The CA certificate will not be extracted from the container, so either install it separately or include it as payload (as seen above) -->
+            <key>PayloadContent</key>
+            <data>CLIENTP12B64</data>
+        </dict>
+        <!-- This payload is optional but it provides an easy way to install the CA certificate together with the configuration -->
+        <dict>
+            <key>PayloadIdentifier</key>
+            <string>org.openwrt.strongswan.ca</string>
+            <key>PayloadUUID</key>
+            <string>8992d31c-9b0a-4cf7-8050-b9543ef1c07c</string>
+            <key>PayloadType</key>
+            <string>com.apple.security.root</string>
+            <key>PayloadVersion</key>
+            <integer>1</integer>
+            <!-- This is the Base64 (PEM) encoded CA certificate -->
+            <key>PayloadContent</key>
+            <data>CERT</data>
+        </dict>
+    </array>
+</dict>
+</plist>

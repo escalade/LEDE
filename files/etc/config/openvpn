@@ -1,0 +1,55 @@
+package openvpn
+
+config openvpn udp
+	option enabled 1
+	option port 1194
+	option proto udp4
+	option dev tun
+	option topology subnet
+	option 'ca' '/etc/CA/caCert.pem'
+        option 'cert' '/etc/CA/serverCert.pem'
+        option 'key' '/etc/CA/serverKey.pem'
+        option 'dh' '/etc/CA/dh.pem'
+	option server '10.1.1.0 255.255.255.0'
+	option ifconfig_pool_persist '/tmp/ipp-udp.txt'
+	option persist_key 1
+	option persist_tun 1
+	option keepalive '10 60'
+	option status /tmp/openvpn-status-udp.log
+	option script_security '2'
+        list 'push' 'redirect-gateway def1'
+        list 'push' 'dhcp-option DNS 10.1.1.1'
+        list 'push' 'dhcp-option DOMAIN lan'
+
+	# 0 is silent, except for fatal errors
+	# 4 is reasonable for general usage
+	# 5 and 6 can help to debug connection problems
+	# 9 is extremely verbose
+	option verb 3
+
+config openvpn tcp
+	option enabled 1
+	option port 1194
+	option proto tcp4
+	option dev tun1
+	option topology subnet
+	option 'ca' '/etc/CA/caCert.pem'
+        option 'cert' '/etc/CA/serverCert.pem'
+        option 'key' '/etc/CA/serverKey.pem'
+        option 'dh' '/etc/CA/dh.pem'
+	option server '10.1.2.0 255.255.255.0'
+	option ifconfig_pool_persist '/tmp/ipp-udp.txt'
+	option persist_key 1
+	option persist_tun 1
+	option keepalive '10 60'
+	option status /tmp/openvpn-status-tcp.log
+	option script_security '2'
+        list 'push' 'redirect-gateway def1'
+        list 'push' 'dhcp-option DNS 10.1.2.1'
+        list 'push' 'dhcp-option DOMAIN lan'
+
+	# 0 is silent, except for fatal errors
+	# 4 is reasonable for general usage
+	# 5 and 6 can help to debug connection problems
+	# 9 is extremely verbose
+	option verb 3

@@ -1,0 +1,22 @@
+<connection>
+  remote WANIP 1194 udp
+  float
+</connection>
+<connection>
+  remote WANIP 1194 tcp
+  float
+</connection>
+verify-x509-name 'CN=WANIP'
+client
+dev tun
+persist-key
+persist-tun
+<ca>
+CA
+</ca>
+<cert>
+CLIENTCERT
+</cert>
+<key>
+CLIENTKEY
+</key>

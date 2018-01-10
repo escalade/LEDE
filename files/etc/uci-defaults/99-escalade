@@ -1,0 +1,231 @@
+#!/bin/sh
+
+# Exit if this file exists so we can sysupgrade without resetting everything
+test -f /etc/.escalade && exit 0
+
+uci batch <<EOF
+
+# Set Timezone
+set system.@system[0].zonename='Europe/Oslo'
+set system.@system[0].timezone='CET-1CEST,M3.5.0,M10.5.0/3'
+
+# Adjust logging
+set system.@system[0].log_size='64'
+set system.@system[0].cronloglevel='9'
+
+# Enable UPnP
+set upnpd.config.enabled='1'
+
+# Automount disks without an fstab entry
+set fstab.@global[0].anon_mount='1'
+
+# Enable statistics for all interfaces
+set luci_statistics.collectd_interface.Interfaces='br-lan eth0.2 wlan1 wlan0 tun1 tun0'
+
+# Enable wireless
+set wireless.@wifi-device[0].country='00'
+set wireless.@wifi-device[0].disabled='0'
+set wireless.@wifi-device[0].log_level='3'
+set wireless.@wifi-iface[0].encryption='psk2'
+set wireless.@wifi-iface[0].key='changemenow'
+set wireless.@wifi-iface[0].wps_pushbutton='0'
+set wireless.@wifi-device[1].country='00'
+set wireless.@wifi-device[1].disabled='0'
+set wireless.@wifi-device[1].log_level='3'
+set wireless.@wifi-iface[1].encryption='psk2'
+set wireless.@wifi-iface[1].key='changemenow'
+set wireless.@wifi-iface[1].wps_pushbutton='0'
+
+# Don't use upstream DNS
+set network.wan.peerdns='0'
+set network.wan.dns='localhost'
+set network.wan.dns_search='lan'
+
+# Don't use DNS from resolv.conf
+set dhcp.@dnsmasq[0].noresolv='1'
+
+# Enable DNS queries from outside the local network
+set dhcp.@dnsmasq[0].localservice='0'
+
+# Use local dnscrypt for DNS
+add_list dhcp.@dnsmasq[0].server='127.0.0.1#5353'
+
+# Use Tor DNS proxy for .onion domain
+add_list dhcp.@dnsmasq[0].server='/onion/127.0.0.1#9053'
+add_list dhcp.@dnsmasq[0].rebind_domain='onion'
+
+# Use Google DNS to look up NTP servers
+add_list dhcp.@dnsmasq[0].server='/0.openwrt.pool.ntp.org/8.8.8.8'
+add_list dhcp.@dnsmasq[0].server='/1.openwrt.pool.ntp.org/8.8.8.8'
+add_list dhcp.@dnsmasq[0].server='/2.openwrt.pool.ntp.org/8.8.8.8'
+add_list dhcp.@dnsmasq[0].server='/3.openwrt.pool.ntp.org/8.8.8.8'
+
+# Configure dnscrypt to use Cisco OpenDNS by default
+set dnscrypt-proxy.ns1.resolver='cisco'
+set dnscrypt-proxy.ns1.log_level='4'
+set dnscrypt-proxy.ns1.syslog_prefix='-'
+
+# Create isolated wireless network dedicated to Tor
+set dhcp.tor='dhcp'
+set dhcp.tor.interface='tor'
+set dhcp.tor.start='100'
+set dhcp.tor.limit='150'
+set dhcp.tor.leasetime='12h'
+
+set network.tor='interface'
+set network.tor.proto='static'
+set network.tor.ipaddr='192.168.2.1'
+set network.tor.netmask='255.255.255.0'
+
+set wireless.tor='wifi-iface'
+set wireless.tor.device='radio0'
+set wireless.tor.network='tor'
+set wireless.tor.mode='ap'
+set wireless.tor.ssid='OpenWrt Tor'
+set wireless.tor.isolate='1'
+set wireless.tor.encryption='psk2'
+set wireless.tor.key='changemenow'
+set wireless.tor.disabled='0'
+
+add firewall zone
+set firewall.@zone[-1].name='vpn'
+set firewall.@zone[-1].input='ACCEPT'
+set firewall.@zone[-1].output='ACCEPT'
+set firewall.@zone[-1].forward='ACCEPT'
+set firewall.@zone[-1].subnet='10.1.1.0/24 10.1.2.0/24 10.1.3.0/24'
+
+add firewall zone
+set firewall.@zone[-1].name='tor'
+set firewall.@zone[-1].input='REJECT'
+set firewall.@zone[-1].output='ACCEPT'
+set firewall.@zone[-1].forward='REJECT'
+set firewall.@zone[-1].network='tor'
+
+# Make sure the VPN zone is ordered before the WAN zone so IPSec isn't treated as WAN
+# and the Tor zone is ordered before the LAN zone so Tor zone isn't treated as LAN
+reorder firewall.@zone[2]=1
+reorder firewall.@zone[3]=2
+
+add firewall forwarding
+set firewall.@forwarding[-1].src='vpn'
+set firewall.@forwarding[-1].dest='wan'
+add firewall forwarding
+set firewall.@forwarding[-1].src='vpn'
+set firewall.@forwarding[-1].dest='lan'
+add firewall forwarding
+set firewall.@forwarding[-1].src='lan'
+set firewall.@forwarding[-1].dest='vpn'
+
+add firewall redirect
+set firewall.@redirect[-1].name='Redirect-traffic-from-Tor-zone-to-Tor-TransPort'
+set firewall.@redirect[-1].src='tor'
+set firewall.@redirect[-1].src_dip='!192.168.2.0/24'
+set firewall.@redirect[-1].dest_port='9040'
+set firewall.@redirect[-1].proto='tcp'
+set firewall.@redirect[-1].target='DNAT'
+set firewall.@redirect[-1].reflection='0'
+
+add firewall redirect
+set firewall.@redirect[-1].name='Redirect-DNS-from-Tor-zone-to-Tor-DNSPort'
+set firewall.@redirect[-1].src='tor'
+set firewall.@redirect[-1].src_dport='53'
+set firewall.@redirect[-1].dest_port='9053'
+set firewall.@redirect[-1].proto='udp'
+set firewall.@redirect[-1].target='DNAT'
+set firewall.@redirect[-1].reflection='0'
+set firewall.@redirect[-1].enabled='0'
+
+add firewall rule
+set firewall.@rule[-1].target='ACCEPT'
+set firewall.@rule[-1].src='tor'
+set firewall.@rule[-1].proto='udp'
+set firewall.@rule[-1].dest_port='67-68'
+set firewall.@rule[-1].name='Allow-DHCP-from-Tor-zone'
+
+add firewall rule
+set firewall.@rule[-1].target='ACCEPT'
+set firewall.@rule[-1].src='tor'
+set firewall.@rule[-1].proto='udp'
+set firewall.@rule[-1].dest_port='53'
+set firewall.@rule[-1].name='Allow-DNS-from-Tor-zone'
+
+add firewall rule
+set firewall.@rule[-1].target='ACCEPT'
+set firewall.@rule[-1].src='tor'
+set firewall.@rule[-1].proto='tcp'
+set firewall.@rule[-1].dest_port='22'
+set firewall.@rule[-1].name='Allow-SSH-from-Tor-zone'
+
+add firewall rule
+set firewall.@rule[-1].target='ACCEPT'
+set firewall.@rule[-1].src='tor'
+set firewall.@rule[-1].proto='tcp'
+set firewall.@rule[-1].dest_port='9040'
+set firewall.@rule[-1].name='Allow-traffic-from-Tor-zone-to-Tor-TransPort'
+
+add firewall rule
+set firewall.@rule[-1].target='ACCEPT'
+set firewall.@rule[-1].src='tor'
+set firewall.@rule[-1].proto='tcp'
+set firewall.@rule[-1].dest_port='9053'
+set firewall.@rule[-1].name='Allow-traffic-from-Tor-zone-to-Tor-DNSPort'
+
+add firewall rule
+set firewall.@rule[-1].target='ACCEPT'
+set firewall.@rule[-1].src='wan'
+set firewall.@rule[-1].proto='udp'
+set firewall.@rule[-1].dest_port='1194'
+set firewall.@rule[-1].name='Allow-OpenVPN-udp'
+
+add firewall rule
+set firewall.@rule[-1].target='ACCEPT'
+set firewall.@rule[-1].src='wan'
+set firewall.@rule[-1].proto='tcp'
+set firewall.@rule[-1].dest_port='1194'
+set firewall.@rule[-1].name='Allow-OpenVPN-tcp'
+
+add firewall rule
+set firewall.@rule[-1].target='ACCEPT'
+set firewall.@rule[-1].src='wan'
+set firewall.@rule[-1].proto='udp'
+set firewall.@rule[-1].dest_port='500'
+set firewall.@rule[-1].name='Allow-IPsec-IKE'
+
+add firewall rule
+set firewall.@rule[-1].target='ACCEPT'
+set firewall.@rule[-1].src='wan'
+set firewall.@rule[-1].proto='udp'
+set firewall.@rule[-1].dest_port='4500'
+set firewall.@rule[-1].name='Allow-IPsec-NAT-T'
+
+add firewall redirect
+set firewall.@redirect[-1]=redirect
+set firewall.@redirect[-1].enabled='0'
+set firewall.@redirect[-1].target='DNAT'
+set firewall.@redirect[-1].src='wan'
+set firewall.@redirect[-1].dest='lan'
+set firewall.@redirect[-1].proto='tcp'
+set firewall.@redirect[-1].src_dport='222'
+set firewall.@redirect[-1].dest_ip='192.168.1.1'
+set firewall.@redirect[-1].dest_port='22'
+set firewall.@redirect[-1].name='Redirect-port-222-from-WAN-to-SSH'
+
+commit
+
+EOF
+
+# Enable root logins through OpenSSH
+if [ -f /etc/ssh/sshd_config ]; then
+  echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
+fi
+
+# Set default root password
+echo 'root:$1$AXAwUHgb$IEEQRpDYQGDK8wNKWdL5n/:17539:0:99999:7:::' > /tmp/shadow.tmp
+grep -v root /etc/shadow >> /tmp/shadow.tmp
+mv /tmp/shadow.tmp /etc/shadow
+
+# Disable VPN until certificates has been created
+test -x /etc/init.d/ipsec && /etc/init.d/ipsec disable
+test -x /etc/init.d/openvpn && /etc/init.d/openvpn disable
+
+touch /etc/.escalade

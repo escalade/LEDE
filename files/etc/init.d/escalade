@@ -1,0 +1,36 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2006 OpenWrt.org
+
+START=99
+boot() {
+
+  # Set up OpenVPN/IPsec
+  [ ! -f /etc/.vpn ] && {
+    vpn.sh buildca
+    vpn.sh buildserver
+    vpn.sh buildclient phone
+    vpn.sh buildclient laptop
+    vpn.sh buildclient workstation
+    [ -x /etc/init.d/ipsec ] && {
+      /etc/init.d/ipsec enable
+      /etc/init.d/ipsec start
+    }
+    [ -x /etc/init.d/openvpn ] && {
+      /etc/init.d/openvpn enable
+      /etc/init.d/openvpn start
+    }
+    touch /etc/.vpn
+  }
+
+  # Force all DNS requests to go through dnsmasq
+  iptables -t nat -A prerouting_rule -p udp --dport 53 -j REDIRECT
+  iptables -t nat -A prerouting_rule -p tcp --dport 53 -j REDIRECT
+
+  # Redirect OpenVPN requests for the WAN address to the LAN address - TLS handshake fails with UDP without it
+  . /lib/functions/network.sh
+  network_get_ipaddr wanip wan
+  [ ! -z $wanip ] && {
+    iptables -t nat -A prerouting_lan_rule -p udp -d $wanip --dport `uci get openvpn.udp.port` -j DNAT --to `uci get network.lan.ipaddr`
+  }
+
+}

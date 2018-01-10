@@ -1,0 +1,11 @@
+VirtualAddrNetworkIPv4 10.192.0.0/10
+AutomapHostsOnResolve 1
+TransPort 0.0.0.0:9040
+SocksPort 0.0.0.0:9050
+DNSPort 0.0.0.0:9053
+User tor
+DataDirectory /var/lib/tor
+Log warn syslog
+
+# Specify exit node country (needs tor-geoip)
+#ExitNodes {NO}
