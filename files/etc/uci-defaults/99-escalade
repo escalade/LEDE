@@ -22,6 +22,9 @@ set fstab.@global[0].anon_mount='1'
 # Enable statistics for all interfaces
 set luci_statistics.collectd_interface.Interfaces='br-lan eth0.2 wlan1 wlan0 tun1 tun0'
 
+# Store RRD files in /root so statistics is kept after reboots and upgrades
+set luci_statistics.collectd_rrdtool.DataDir='/root/.rrd'
+
 # Enable wireless
 set wireless.@wifi-device[0].country='00'
 set wireless.@wifi-device[0].disabled='0'
@@ -99,7 +102,7 @@ set firewall.@zone[-1].name='tor'
 set firewall.@zone[-1].input='REJECT'
 set firewall.@zone[-1].output='ACCEPT'
 set firewall.@zone[-1].forward='REJECT'
-set firewall.@zone[-1].network='tor'
+set firewall.@zone[-1].subnet='192.168.2.0/24'
 
 # Make sure the VPN zone is ordered before the WAN zone so IPSec isn't treated as WAN
 # and the Tor zone is ordered before the LAN zone so Tor zone isn't treated as LAN
@@ -209,6 +212,14 @@ set firewall.@redirect[-1].src_dport='222'
 set firewall.@redirect[-1].dest_ip='192.168.1.1'
 set firewall.@redirect[-1].dest_port='22'
 set firewall.@redirect[-1].name='Redirect-port-222-from-WAN-to-SSH'
+
+add firewall rule
+set firewall.@rule[-1].name='Drop-APIPA'
+set firewall.@rule[-1].src='lan'
+set firewall.@rule[-1].src_ip='169.254.0.0/16'
+set firewall.@rule[-1].target='DROP'
+set firewall.@rule[-1].proto='any'
+set firewall.@rule[-1].family='ipv4'
 
 commit
 
