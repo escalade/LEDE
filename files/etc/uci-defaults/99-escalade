@@ -51,7 +51,7 @@ set dhcp.@dnsmasq[0].noresolv='1'
 set dhcp.@dnsmasq[0].localservice='0'
 
 # Use local dnscrypt for DNS
-add_list dhcp.@dnsmasq[0].server='127.0.0.1#5353'
+add_list dhcp.@dnsmasq[0].server='127.0.0.1#5300'
 
 # Use Tor DNS proxy for .onion domain
 add_list dhcp.@dnsmasq[0].server='/onion/127.0.0.1#9053'
@@ -63,8 +63,11 @@ add_list dhcp.@dnsmasq[0].server='/1.openwrt.pool.ntp.org/8.8.8.8'
 add_list dhcp.@dnsmasq[0].server='/2.openwrt.pool.ntp.org/8.8.8.8'
 add_list dhcp.@dnsmasq[0].server='/3.openwrt.pool.ntp.org/8.8.8.8'
 
+# The default port used by dnscrypt-proxy is 5353 which is normally used by mdns services such as avahi
+set dnscrypt-proxy.ns1.port='5300'
 # Configure dnscrypt to use Cisco OpenDNS by default
 set dnscrypt-proxy.ns1.resolver='cisco'
+# Adjust logging
 set dnscrypt-proxy.ns1.log_level='4'
 set dnscrypt-proxy.ns1.syslog_prefix='-'
 
@@ -94,7 +97,7 @@ add firewall zone
 set firewall.@zone[-1].name='vpn'
 set firewall.@zone[-1].input='ACCEPT'
 set firewall.@zone[-1].output='ACCEPT'
-set firewall.@zone[-1].forward='ACCEPT'
+set firewall.@zone[-1].forward='REJECT'
 set firewall.@zone[-1].subnet='10.1.1.0/24 10.1.2.0/24 10.1.3.0/24'
 
 add firewall zone
@@ -212,6 +215,7 @@ set firewall.@redirect[-1].src_dport='222'
 set firewall.@redirect[-1].dest_ip='192.168.1.1'
 set firewall.@redirect[-1].dest_port='22'
 set firewall.@redirect[-1].name='Redirect-port-222-from-WAN-to-SSH'
+set firewall.@redirect[-1].reflection='0'
 
 add firewall rule
 set firewall.@rule[-1].name='Drop-APIPA'
