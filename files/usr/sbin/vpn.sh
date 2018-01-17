@@ -50,9 +50,9 @@ buildclient () {
   KEY=`cat $CLIENTKEY`
   cat /etc/templates/ovpn.template | awk '{gsub("WANIP",x)}1' x="$wan_ip" | awk '{gsub("CA",x)}1' x="$CA" | awk '{gsub("CLIENTCERT",x)}1' x="$CERT" | awk '{gsub("CLIENTKEY",x)}1' x="$KEY" > /www/vpn/$1.ovpn
   # Create iOS profile
-  CERT=$(sed -n '/BEGIN/,/END/p' $CACERT | sed '/BEGIN/d' | sed '/END/d')
-  CLIENTP12B64=$(openssl base64 -in $CLIENTP12)
-  cat /etc/templates/ios-ikev2.template | awk '{gsub("WANIP",x)}1' x="$wan_ip" | awk '{gsub("CLIENTNAME",x)}1' x="$1" | awk '{gsub("P12PASS",x)}1' x="$P12PASS" | awk '{gsub("CLIENTP12B64",x)}1' x="$CLIENTP12B64" | awk '{gsub("CERT",x)}1' x="$CERT" > /www/vpn/$1.mobileconfig
+  #CERT=$(sed -n '/BEGIN/,/END/p' $CACERT | sed '/BEGIN/d' | sed '/END/d')
+  #CLIENTP12B64=$(openssl base64 -in $CLIENTP12)
+  #cat /etc/templates/ios-ikev2.template | awk '{gsub("WANIP",x)}1' x="$wan_ip" | awk '{gsub("CLIENTNAME",x)}1' x="$1" | awk '{gsub("P12PASS",x)}1' x="$P12PASS" | awk '{gsub("CLIENTP12B64",x)}1' x="$CLIENTP12B64" | awk '{gsub("CERT",x)}1' x="$CERT" > /www/vpn/$1.mobileconfig
 }
 
 clean () {
