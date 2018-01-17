@@ -11,11 +11,11 @@ boot() {
     vpn.sh buildclient phone
     vpn.sh buildclient laptop
     vpn.sh buildclient workstation
-    [ -x /etc/init.d/ipsec ] && {
+    [ -x /etc/init.d/ipsec -a -f /etc/CA/serverCert.pem ] && {
       /etc/init.d/ipsec enable
       /etc/init.d/ipsec start
     }
-    [ -x /etc/init.d/openvpn ] && {
+    [ -x /etc/init.d/openvpn -a -f /etc/CA/serverCert.pem ] && {
       /etc/init.d/openvpn enable
       /etc/init.d/openvpn start
     }
@@ -32,5 +32,8 @@ boot() {
   [ ! -z $wanip ] && {
     iptables -t nat -A prerouting_lan_rule -p udp -d $wanip --dport `uci get openvpn.udp.port` -j DNAT --to `uci get network.lan.ipaddr`
   }
+
+  # Increase TTL on SSDP packets to 2 for multicast routing to work
+  iptables -t mangle -A PREROUTING -d 239.255.255.250 -j TTL --ttl-inc 1
 
 }
