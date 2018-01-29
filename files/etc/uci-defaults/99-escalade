@@ -212,10 +212,8 @@ set firewall.@redirect[-1].src='wan'
 set firewall.@redirect[-1].dest='lan'
 set firewall.@redirect[-1].proto='tcp'
 set firewall.@redirect[-1].src_dport='222'
-set firewall.@redirect[-1].dest_ip='192.168.1.1'
 set firewall.@redirect[-1].dest_port='22'
 set firewall.@redirect[-1].name='Redirect-port-222-from-WAN-to-SSH'
-set firewall.@redirect[-1].reflection='0'
 
 add firewall rule
 set firewall.@rule[-1].name='Drop-APIPA'
