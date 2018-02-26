@@ -50,6 +50,9 @@ set dhcp.@dnsmasq[0].noresolv='1'
 # Enable DNS queries from outside the local network
 set dhcp.@dnsmasq[0].localservice='0'
 
+# Increase dnsmasq cache size (default 150)
+set dhcp.@dnsmasq[0].cachesize='5000'
+
 # Use local dnscrypt for DNS
 add_list dhcp.@dnsmasq[0].server='127.0.0.1#5300'
 
@@ -69,7 +72,6 @@ set dnscrypt-proxy.ns1.port='5300'
 set dnscrypt-proxy.ns1.resolver='cisco'
 # Adjust logging
 set dnscrypt-proxy.ns1.log_level='4'
-set dnscrypt-proxy.ns1.syslog_prefix='-'
 
 # Create isolated wireless network dedicated to Tor
 set dhcp.tor='dhcp'
