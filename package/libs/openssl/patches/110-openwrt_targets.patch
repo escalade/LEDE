@@ -1,0 +1,38 @@
+--- /dev/null
++++ b/Configurations/25-openwrt.conf
+@@ -0,0 +1,35 @@
++%targets = (
++    "linux-x86_64-openwrt" => {
++        inherit_from    => [ "linux-x86_64" ],
++	cflags		=> add("\$(OPENWRT_OPTIMIZATION_FLAGS)"),
++    },
++    "linux-x86-openwrt" => {
++        inherit_from    => [ "linux-x86" ],
++	cflags		=> add("\$(OPENWRT_OPTIMIZATION_FLAGS)"),
++    },
++    "linux-aarch64-openwrt" => {
++        inherit_from    => [ "linux-aarch64" ],
++	cflags		=> add("\$(OPENWRT_OPTIMIZATION_FLAGS)"),
++    },
++    "linux-armv4-openwrt" => {
++        inherit_from    => [ "linux-armv4" ],
++	cflags		=> add("\$(OPENWRT_OPTIMIZATION_FLAGS)"),
++    },
++    "linux-mips32-openwrt" => {
++        inherit_from    => [ "linux-mips32" ],
++	cflags		=> add("\$(OPENWRT_OPTIMIZATION_FLAGS)"),
++    },
++    "linux-mips64-openwrt" => {
++        inherit_from    => [ "linux64-mips64" ],
++	cflags		=> add("\$(OPENWRT_OPTIMIZATION_FLAGS)"),
++    },
++    "linux-ppc-openwrt" => {
++        inherit_from    => [ "linux-ppc" ],
++	cflags		=> add("\$(OPENWRT_OPTIMIZATION_FLAGS)"),
++    },
++    "linux-generic32-openwrt" => {
++        inherit_from    => [ "linux-generic32" ],
++	cflags		=> add("\$(OPENWRT_OPTIMIZATION_FLAGS)"),
++    },
++);
++
