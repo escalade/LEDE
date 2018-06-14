@@ -143,6 +143,16 @@ set firewall.@redirect[-1].target='DNAT'
 set firewall.@redirect[-1].reflection='0'
 set firewall.@redirect[-1].enabled='0'
 
+add firewall redirect
+set firewall.@redirect[-1].name='Redirect-traffic-from-VPN-zone-to-Tor-TransPort'
+set firewall.@redirect[-1].src='vpn'
+set firewall.@redirect[-1].src_dip='!192.168.1.0/24'
+set firewall.@redirect[-1].dest_port='9040'
+set firewall.@redirect[-1].proto='tcp'
+set firewall.@redirect[-1].target='DNAT'
+set firewall.@redirect[-1].reflection='0'
+set firewall.@redirect[-1].enabled='0'
+
 add firewall rule
 set firewall.@rule[-1].target='ACCEPT'
 set firewall.@rule[-1].src='tor'
