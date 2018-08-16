@@ -116,7 +116,7 @@ define Package/libopenssl-padlock
   DEPENDS:=libopenssl @OPENSSL_ENGINE @TARGET_x86
 endef
 
-OPENSSL_NO_CIPHERS:= no-idea no-mdc2 no-camellia no-whirlpool no-seed
+OPENSSL_NO_CIPHERS:= no-idea no-mdc2 no-camellia no-whirlpool no-seed no-gost
 OPENSSL_OPTIONS:= shared no-err
 
 ifdef CONFIG_OPENSSL_ENGINE
