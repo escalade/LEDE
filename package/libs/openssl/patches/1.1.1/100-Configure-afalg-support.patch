@@ -1,0 +1,13 @@
+--- a/Configure
++++ b/Configure
+@@ -1537,7 +1537,9 @@ unless ($disabled{"crypto-mdebug-backtra
+ 
+ unless ($disabled{afalgeng}) {
+     $config{afalgeng}="";
+-    if (grep { $_ eq 'afalgeng' } @{$target{enable}}) {
++    if ($target =~ m/openwrt$/) {
++        push @{$config{engdirs}}, "afalg";
++    } elsif (grep { $_ eq 'afalgeng' } @{$target{enable}}) {
+         my $minver = 4*10000 + 1*100 + 0;
+         if ($config{CROSS_COMPILE} eq "") {
+             my $verstr = `uname -r`;

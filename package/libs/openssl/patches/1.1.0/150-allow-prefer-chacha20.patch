@@ -1,0 +1,30 @@
+--- a/ssl/ssl_ciph.c
++++ b/ssl/ssl_ciph.c
+@@ -1352,11 +1352,18 @@ STACK_OF(SSL_CIPHER) *ssl_create_cipher_
+     ssl_cipher_apply_rule(0, SSL_kECDHE, 0, 0, 0, 0, 0, CIPHER_DEL, -1, &head,
+                           &tail);
+ 
++#ifdef OPENSSL_PREFER_CHACHA_OVER_GCM
++    ssl_cipher_apply_rule(0, 0, 0, SSL_CHACHA20, 0, 0, 0, CIPHER_ADD, -1,
++                          &head, &tail);
++    ssl_cipher_apply_rule(0, 0, 0, SSL_AESGCM, 0, 0, 0, CIPHER_ADD, -1,
++                          &head, &tail);
++#else
+     /* Within each strength group, we prefer GCM over CHACHA... */
+     ssl_cipher_apply_rule(0, 0, 0, SSL_AESGCM, 0, 0, 0, CIPHER_ADD, -1,
+                           &head, &tail);
+     ssl_cipher_apply_rule(0, 0, 0, SSL_CHACHA20, 0, 0, 0, CIPHER_ADD, -1,
+                           &head, &tail);
++#endif
+ 
+     /*
+      * ...and generally, our preferred cipher is AES.
+@@ -1412,7 +1419,7 @@ STACK_OF(SSL_CIPHER) *ssl_create_cipher_
+      * Within each group, ciphers remain sorted by strength and previous
+      * preference, i.e.,
+      * 1) ECDHE > DHE
+-     * 2) GCM > CHACHA
++     * 2) GCM > CHACHA, reversed if OPENSSL_PREFER_CHACHA_OVER_GCM is defined
+      * 3) AES > rest
+      * 4) TLS 1.2 > legacy
+      *

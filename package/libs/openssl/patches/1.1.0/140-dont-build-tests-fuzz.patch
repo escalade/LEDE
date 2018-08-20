@@ -1,0 +1,11 @@
+--- a/Configure
++++ b/Configure
+@@ -303,7 +303,7 @@ my $default_ranlib;
+ $config{fips}=0;
+ 
+ # Top level directories to build
+-$config{dirs} = [ "crypto", "ssl", "engines", "apps", "test", "util", "tools", "fuzz" ];
++$config{dirs} = [ "crypto", "ssl", "engines", "apps", "util", "tools" ];
+ # crypto/ subdirectories to build
+ $config{sdirs} = [
+     "objects",

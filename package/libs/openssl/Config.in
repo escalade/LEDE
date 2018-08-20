@@ -1,66 +1,29 @@
 if PACKAGE_libopenssl
 
-config OPENSSL_WITH_EC
-	bool
-	default y
-	prompt "Enable elliptic curve support"
+choice
+	prompt "OpenSSL Version"
+	default OPENSSL_USE_VERSION_1_1_0
 	help
-		Elliptic-curve cryptography (ECC) is an approach to public-key
-		cryptography based on the algebraic structure of elliptic curves
-		over finite fields. ECC requires smaller keys compared to non-ECC
-		cryptography to provide equivalent security.
+		Select the version of OpenSSL you wish to use.
 
-config OPENSSL_WITH_EC2M
-        bool
-        depends on OPENSSL_WITH_EC
-        prompt "Enable ec2m support"
-	help
-		This option enables the more efficient, yet less common, binary
-		field elliptic curves.
+	config OPENSSL_USE_VERSION_1_0_2
+		bool "OpenSSL v. 1.0.2 (LTS) series"
+		help
+		   1.0.2 is a Long Term Support (LTS) series, supported by
+		   upstream until 31st December 2009.
 
-config OPENSSL_WITH_DTLS
-	bool
-	default n
-	prompt "Enable DTLS support"
-	help
-		Datagram Transport Layer Security (DTLS) provides TLS-like security
-		for datagram-based (UDP, DCCP, CAPWAP, SCTP & SRTP) applications.
+	config OPENSSL_USE_VERSION_1_1_0
+		bool "OpenSSL v. 1.1.0 (stable) series"
+		help
+		   1.1.0 is the current stable series.
 
-config OPENSSL_WITH_COMPRESSION
-	bool
-	default n
-	prompt "Enable compression support"
-	help
-		TLS compression is not recommended, as it is deemed insecure.
-		The CRIME attack exploits this weakness.
-		Even with this option turned on, it is disabled by default, and the
-		application must explicitly turn it on.
+	config OPENSSL_USE_VERSION_1_1_1
+		bool "OpenSSL v. 1.1.1 (development) series"
+		help
+		   1.1.1 is the latest development series, currently in beta.
+endchoice
 
-config OPENSSL_WITH_PSK
-	bool
-	default y
-	prompt "Enable PSK support"
-	help
-		Build support for Pre-Shared Key based cipher suites.
-
-config OPENSSL_WITH_SRP
-	bool
-	default y
-	prompt "Enable SRP support"
-	help
-		The Secure Remote Password protocol (SRP) is an augmented
-		password-authenticated key agreement (PAKE) protocol, specifically
-		designed to work around existing patents.
-
-config OPENSSL_WITH_DEPRECATED
-	bool
-	default y
-	prompt "Include deprecated APIs (See help for a list of packages that need this)"
-	help
-		Since openssl 1.1.0 is still new to openwrt, some packages
-		requiring this option do not list it as a requirement yet.
-		Packages requiring this option and not listing it as a requirement:
-		 * hostapd, freeswitch-stable, freeswitch, python, python3, squid.
+comment "Build Options"
 
 config OPENSSL_OPTIMIZE_SPEED
 	bool
@@ -96,10 +59,10 @@ config OPENSSL_WITH_ASM
 		* Only most common algorithms shown. Your mileage may vary.
 		  BN (bignum) performance was measured using RSA sign/verify.
 
-config OPENSSL_NO_SSE2
+config OPENSSL_WITH_SSE2
 	bool
-	default y if TARGET_x86_legacy || TARGET_x86_geode
-	prompt "Disable use of x86 SSE2 instructions"
+	default y if !TARGET_x86_legacy && !TARGET_x86_geode
+	prompt "Enable use of x86 SSE2 instructions"
 	help
 		Use of SSE2 instructions greatly increase performance (up to
 		3x faster) with a minimum (~0.2%, or 23KB) increase in package
@@ -109,16 +72,136 @@ config OPENSSL_NO_SSE2
 		Pentium 4 and above support SSE2.
 	depends on OPENSSL_WITH_ASM && i386
 
-config OPENSSL_OTHER_OPTIONS
+config OPENSSL_WITH_DEPRECATED
+	bool
+	default y
+	prompt "Include deprecated APIs (See help for a list of packages that need this)"
+
+	help
+		Since openssl 1.1.x is still new to openwrt, some packages
+		requiring this option do not list it as a requirement yet.
+
+		For openssl version 1.1.x:
+		 * hostapd, freeswitch-stable, freeswitch, python, python3, squid.
+
+		For openssl 1.0.2, squid currently requires this.
+
+comment "Protocol Support"
+
+config OPENSSL_WITH_TLS13
+	bool
+	default y
+	prompt "Enable support for TLS 1.3"
+	depends on OPENSSL_USE_VERSION_1_1_1
+	select OPENSSL_WITH_EC
+	help
+		TLS 1.3 is the newest version of the TLS specification.
+		It aims:
+		 * to increase the overall security of the protocol,
+		   removing outdated algorithms, and encrypting more of the
+		   protocol;
+		 * to increase performance by reducing the number of round-trips
+		   when performing a full handshake.
+		It increases package size by ~4KB.
+
+config OPENSSL_WITH_DTLS
 	bool
 	default n
-	prompt "Choose less commonly used build options"
+	prompt "Enable DTLS support"
+	help
+		Datagram Transport Layer Security (DTLS) provides TLS-like security
+		for datagram-based (UDP, DCCP, CAPWAP, SCTP & SRTP) applications.
+
+config OPENSSL_WITH_NPN
+	bool
+	default y
+	prompt "Enable NPN support"
+	help
+		NPN is a TLS extension, obsoleted and replaced with ALPN,
+		used to negotiate SPDY, and HTTP/2.
+
+config OPENSSL_WITH_SRP
+	bool
+	default y
+	prompt "Enable SRP support"
+	help
+		The Secure Remote Password protocol (SRP) is an augmented
+		password-authenticated key agreement (PAKE) protocol, specifically
+		designed to work around existing patents.
+
+config OPENSSL_WITH_CMS
+	bool
+	default y
+	prompt "Enable CMS (RFC 5652) support"
+	help
+		Cryptographic Message Syntax (CMS) is used to digitally sign,
+		digest, authenticate, or encrypt arbitrary message content.
+
+comment "Algorithm Selection"
+
+config OPENSSL_WITH_EC
+	bool
+	default y
+	prompt "Enable elliptic curve support"
+	help
+		Elliptic-curve cryptography (ECC) is an approach to public-key
+		cryptography based on the algebraic structure of elliptic curves
+		over finite fields. ECC requires smaller keys compared to non-ECC
+		cryptography to provide equivalent security.
+
+config OPENSSL_WITH_EC2M
+        bool
+        depends on OPENSSL_WITH_EC
+        prompt "Enable ec2m support"
+	help
+		This option enables the more efficient, yet less common, binary
+		field elliptic curves.
+
+config OPENSSL_WITH_CHACHA_POLY1305
+	bool
+	default y
+	prompt "Enable ChaCha20-Poly1305 ciphersuite support"
+	depends on !OPENSSL_USE_VERSION_1_0_2
+	help
+		ChaCha20-Poly1305 is an AEAD ciphersuite with 256-bit keys,
+		combining ChaCha stream cipher with Poly1305 MAC.
+		It is 3x faster than AES, when not using a CPU with AES-specific
+		instructions, as is the case of most embedded devices.
+
+config OPENSSL_PREFER_CHACHA_OVER_GCM
+	bool
+#	default y if !ARCH_64BIT
+	default n
+	prompt "Prefer ChaCha20-Poly1305 over AES-GCM by default"
+	depends on OPENSSL_WITH_CHACHA_POLY1305
+	help
+		The default openssl preference is for AES-GCM before ChaCha, but
+		that takes into account AES-NI capable chips.  It is not the
+		case with most embedded chips, so it may be better to invert
+		that preference.  This is just for the default case. The
+		application can always override this.
+
+config OPENSSL_WITH_PSK
+	bool
+	default y
+	prompt "Enable PSK support"
+	help
+		Build support for Pre-Shared Key based cipher suites.
+
+comment "Less commonly used build options"
+
+config OPENSSL_WITH_ARIA
+        bool
+        default n
+        prompt "Enable ARIA support"
+	depends on OPENSSL_USE_VERSION_1_1_1
+	help
+		ARIA is a block cipher developed in South Korea, based on AES.
 
 config OPENSSL_WITH_CAMELLIA
 	bool
 	default n
 	prompt "Enable Camellia cipher support"
-	depends on OPENSSL_OTHER_OPTIONS
 	help
 		Camellia is a bock cipher with security levels and processing
 		abilities comparable to AES.
@@ -127,7 +210,6 @@ config OPENSSL_WITH_IDEA
 	bool
 	default n
 	prompt "Enable IDEA cipher support"
-	depends on OPENSSL_OTHER_OPTIONS
 	help
 		IDEA is a block cipher with 128-bit keys.
 
@@ -135,37 +217,55 @@ config OPENSSL_WITH_SEED
 	bool
 	default n
 	prompt "Enable SEED cipher support"
-	depends on OPENSSL_OTHER_OPTIONS
 	help
 		SEED is a block cipher with 128-bit keys broadly used in
 		South Korea, but seldom found elsewhere.
+
+config OPENSSL_WITH_SM234
+	bool
+	default n
+	prompt "Enable SM2/3/4 algorithms support"
+	depends on OPENSSL_USE_VERSION_1_1_1
+	help
+		These algorithms are a set of "Commercial Cryptography"
+		algorithms approved for use in China.
+		  * SM2 is an EC algorithm equivalent to ECDSA P-256
+		  * SM3 is a hash function equivalent to SHA-256
+		  * SM4 is a 128-block cipher equivalent to AES-128
+
+config OPENSSL_WITH_BLAKE2
+	bool
+	default n
+	prompt "Enable BLAKE2 digest support"
+	depends on !OPENSSL_USE_VERSION_1_0_2
+	help
+		BLAKE2 is a cryptographic hash function based on the ChaCha
+		stream cipher.
 
 config OPENSSL_WITH_MDC2
 	bool
 	default n
 	prompt "Enable MDC2 digest support"
-	depends on OPENSSL_OTHER_OPTIONS
 
 config OPENSSL_WITH_WHIRLPOOL
 	bool
 	default n
 	prompt "Enable Whirlpool digest support"
-	depends on OPENSSL_OTHER_OPTIONS
 
-config OPENSSL_WITH_CMS
+config OPENSSL_WITH_COMPRESSION
 	bool
 	default n
-	prompt "Enable CMS (RFC 5652) support"
-	depends on OPENSSL_OTHER_OPTIONS
+	prompt "Enable compression support"
 	help
-		Cryptographic Message Syntax (CMS) is used to digitally sign,
-		digest, authenticate, or encrypt arbitrary message content.
+		TLS compression is not recommended, as it is deemed insecure.
+		The CRIME attack exploits this weakness.
+		Even with this option turned on, it is disabled by default, and the
+		application must explicitly turn it on.
 
 config OPENSSL_WITH_RFC3779
 	bool
 	default n
 	prompt "Enable RFC3779 support (BGP)"
-	depends on OPENSSL_OTHER_OPTIONS
 	help
 		RFC 3779 defines two X.509 v3 certificate extensions.  The first
 		binds a list of IP address blocks, or prefixes, to the subject of a
@@ -174,6 +274,8 @@ config OPENSSL_WITH_RFC3779
 		used to convey the authorization of the subject to use the IP
 		addresses and autonomous system identifiers contained in the
 		extensions.
+
+comment "Engine/Hardware Support"
 
 config OPENSSL_ENGINE
 	bool "Enable engine support"
@@ -199,7 +301,7 @@ config OPENSSL_WITH_ASYNC
 	bool
 	default n
 	prompt "Enable asynchronous jobs support"
-	depends on OPENSSL_OTHER_OPTIONS && OPENSSL_ENGINE && USE_GLIBC
+	depends on OPENSSL_ENGINE && USE_GLIBC
 	help
 		Enables async-aware applications to be able to use OpenSSL to
 		initiate crypto operations asynchronously. In order to work
@@ -208,12 +310,14 @@ config OPENSSL_WITH_ASYNC
 config OPENSSL_WITH_GOST
 	bool
 	default n
-	prompt "Prepare library for external GOST engine"
-	depends on OPENSSL_OTHER_OPTIONS && OPENSSL_ENGINE
+	prompt "Prepare library for GOST engine"
+	depends on OPENSSL_ENGINE
 	help
-		This option prepares the library to accept an external
-		engine, not included in standard openwrt feeds, to add
-		support for Russian GOST crypto algorithms.  See
+		This option prepares the library to accept engine support
+		for Russian GOST crypto algorithms.
+		The engine is shipped with OpenSSL 1.0.2, but not with 1.1.x.
+		The 1.1.x gost engine is not included in standard openwrt feeds.
+		To build such engine yourself, see:
 		https://github.com/gost-engine/engine
 
 endif

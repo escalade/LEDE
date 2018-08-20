@@ -1,0 +1,51 @@
+--- a/ssl/ssl_ciph.c
++++ b/ssl/ssl_ciph.c
+@@ -1464,11 +1464,18 @@ STACK_OF(SSL_CIPHER) *ssl_create_cipher_
+     ssl_cipher_apply_rule(0, SSL_kECDHE, 0, 0, 0, 0, 0, CIPHER_DEL, -1, &head,
+                           &tail);
+ 
++#ifdef OPENSSL_PREFER_CHACHA_OVER_GCM
++    ssl_cipher_apply_rule(0, 0, 0, SSL_CHACHA20, 0, 0, 0, CIPHER_ADD, -1,
++                          &head, &tail);
++    ssl_cipher_apply_rule(0, 0, 0, SSL_AESGCM, 0, 0, 0, CIPHER_ADD, -1,
++                          &head, &tail);
++#else
+     /* Within each strength group, we prefer GCM over CHACHA... */
+     ssl_cipher_apply_rule(0, 0, 0, SSL_AESGCM, 0, 0, 0, CIPHER_ADD, -1,
+                           &head, &tail);
+     ssl_cipher_apply_rule(0, 0, 0, SSL_CHACHA20, 0, 0, 0, CIPHER_ADD, -1,
+                           &head, &tail);
++#endif
+ 
+     /*
+      * ...and generally, our preferred cipher is AES.
+@@ -1524,7 +1531,7 @@ STACK_OF(SSL_CIPHER) *ssl_create_cipher_
+      * Within each group, ciphers remain sorted by strength and previous
+      * preference, i.e.,
+      * 1) ECDHE > DHE
+-     * 2) GCM > CHACHA
++     * 2) GCM > CHACHA, reversed if OPENSSL_PREFER_CHACHA_OVER_GCM is defined
+      * 3) AES > rest
+      * 4) TLS 1.2 > legacy
+      *
+--- a/include/openssl/ssl.h
++++ b/include/openssl/ssl.h
+@@ -173,9 +173,15 @@ extern "C" {
+ # define SSL_DEFAULT_CIPHER_LIST "ALL:!COMPLEMENTOFDEFAULT:!eNULL"
+ /* This is the default set of TLSv1.3 ciphersuites */
+ # if !defined(OPENSSL_NO_CHACHA) && !defined(OPENSSL_NO_POLY1305)
+-#  define TLS_DEFAULT_CIPHERSUITES "TLS_AES_256_GCM_SHA384:" \
+-                                   "TLS_CHACHA20_POLY1305_SHA256:" \
+-                                   "TLS_AES_128_GCM_SHA256"
++#  ifdef OPENSSL_PREFER_CHACHA_OVER_GCM
++#   define TLS_DEFAULT_CIPHERSUITES "TLS_CHACHA20_POLY1305_SHA256:" \
++                                    "TLS_AES_256_GCM_SHA384:" \
++                                    "TLS_AES_128_GCM_SHA256"
++#  else
++#   define TLS_DEFAULT_CIPHERSUITES "TLS_AES_256_GCM_SHA384:" \
++                                    "TLS_CHACHA20_POLY1305_SHA256:" \
++                                    "TLS_AES_128_GCM_SHA256"
++#  endif
+ # else
+ #  define TLS_DEFAULT_CIPHERSUITES "TLS_AES_256_GCM_SHA384:" \
+                                    "TLS_AES_128_GCM_SHA256"
