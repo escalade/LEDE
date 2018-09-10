@@ -1,0 +1,11 @@
+--- a/file.c	2018-09-07 22:44:02.664621911 +0200
++++ b/file.c	2018-09-06 20:36:12.168752332 +0200
+@@ -19,7 +19,7 @@
+ 
+ #ifndef _DEFAULT_SOURCE
+ # define _DEFAULT_SOURCE
+-#define
++#endif
+ 
+ #define _BSD_SOURCE
+ #define _DARWIN_C_SOURCE
