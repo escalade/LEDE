@@ -132,7 +132,7 @@ $(call Package/e2fsprogs)
 endef
 
 TARGET_CFLAGS += $(FPIC) -ffunction-sections -fdata-sections -flto
-TARGET_LDFLAGS += -flto
+TARGET_LDFLAGS += -flto -lpthread
 
 CONFIGURE_ARGS += \
 	--disable-testio-debug \
