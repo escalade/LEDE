@@ -7,7 +7,7 @@ choice
 		Select the version of OpenSSL you wish to use.
 
 	config OPENSSL_USE_VERSION_1_0_2
-		bool "OpenSSL v. 1.0.2 (LTS) series"
+		bool "OpenSSL v. 1.0.2 (old LTS) series"
 		help
 		   1.0.2 is a Long Term Support (LTS) series, supported by
 		   upstream until 31st December 2009.
@@ -15,12 +15,14 @@ choice
 	config OPENSSL_USE_VERSION_1_1_0
 		bool "OpenSSL v. 1.1.0 (stable) series"
 		help
-		   1.1.0 is the current stable series.
+		   1.1.0 is the previous stable series, supported by upstream
+		   (security fixes only) until 11th September 2019.
 
 	config OPENSSL_USE_VERSION_1_1_1
-		bool "OpenSSL v. 1.1.1 (development) series"
+		bool "OpenSSL v. 1.1.1 (new LTS) series"
 		help
-		   1.1.1 is the latest development series, currently in beta.
+		   1.1.1 is the latest Long Term Support (LTS) series,
+		   supported until 11th September 2023.
 endchoice
 
 comment "Build Options"
