@@ -11,7 +11,7 @@ Signed-off-by: Mathew McBride <matt@traverse.com.au>
 
 --- a/arch/arm64/boot/dts/freescale/Makefile
 +++ b/arch/arm64/boot/dts/freescale/Makefile
-@@ -20,7 +20,10 @@ dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2
+@@ -21,7 +21,10 @@ dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2
  dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2080a-simu.dtb
  dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2088a-qds.dtb
  dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2088a-rdb.dtb
