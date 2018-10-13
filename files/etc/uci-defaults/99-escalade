@@ -53,8 +53,8 @@ set dhcp.@dnsmasq[0].localservice='0'
 # Increase dnsmasq cache size (default 150)
 set dhcp.@dnsmasq[0].cachesize='5000'
 
-# Use DNS-over-HTTPS proxy as resolver
-add_list dhcp.@dnsmasq[0].server='127.0.0.1#5054'
+# Use Cloudflare DNS as the default resolver
+add_list dhcp.@dnsmasq[0].server='1.1.1.1'
 
 # Use Tor DNS proxy for .onion domain
 add_list dhcp.@dnsmasq[0].server='/onion/127.0.0.1#9053'
@@ -245,5 +245,8 @@ mv /tmp/shadow.tmp /etc/shadow
 # Disable VPN until certificates has been created
 test -x /etc/init.d/ipsec && /etc/init.d/ipsec disable
 test -x /etc/init.d/openvpn && /etc/init.d/openvpn disable
+
+# Disable https-dns-proxy by default
+test -x /etc/init.d/https_dns_proxy && /etc/init.d/https_dns_proxy disable
 
 touch /etc/.escalade
