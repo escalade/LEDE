@@ -1,11 +1,15 @@
 #!/bin/sh /etc/rc.common
+# First start irqbalance with the --oneshot option
+# Try to balance manually both eth to core2 and wifi0 to core2 ifthey are not balanced correctly
+# System -> startup -> Local Startup
+#  /etc/init.d/set_cpu_affinity
 
 START=99
 
 set_irq_affinity() {
 	local name="$1"
 	local val="$2"
-  
+
 case "$name" in
 wifi0)
   	local irq_wifi0=`grep -E -m1 'ath10k_ahb|qcom-pcie-msi' /proc/interrupts | cut -d: -f1 | tail -n1 | tr -d ' '`
@@ -17,10 +21,15 @@ wifi1)
 	[ -n "$irq_wifi1" ] || echo "$name irq not found."
 	echo "$val" > "/proc/irq/$irq_wifi1/smp_affinity"
 	;;
-wifi2)
-  	local irq_wifi1=`grep -E -m3 'ath10k_ahb|qcom-pcie-msi' /proc/interrupts | cut -d: -f1 | tail -n1 | tr -d ' '`
-	[ -n "$irq_wifi1" ] || echo "$name irq not found."
-	echo "$val" > "/proc/irq/$irq_wifi1/smp_affinity"
+eth0)
+  	local irq_eth0=`grep -E -m3 'eth0' /proc/interrupts | cut -d: -f1 | tail -n1 | tr -d ' '`
+	[ -n "$irq_eth0" ] || echo "$name irq not found."
+	echo "$val" > "/proc/irq/$irq_eth0/smp_affinity"
+	;;
+eth1)
+  	local irq_eth1=`grep -E -m3 'eth1' /proc/interrupts | cut -d: -f1 | tail -n1 | tr -d ' '`
+	[ -n "$irq_eth1" ] || echo "$name irq not found."
+	echo "$val" > "/proc/irq/$irq_eth1/smp_affinity"
 	;;
 *)
   	local irq=`grep -m 1 "$name" /proc/interrupts | cut -d: -f1 | sed 's, *,,'`
@@ -31,48 +40,15 @@ esac
 }
 
 start() {
+	. /lib/functions.sh
 
-. /lib/functions.sh
+	/usr/sbin/irqbalance --oneshot --debug > /var/log/irqbalance.log
 
-local board=$(board_name)
+	# WAN and 802.11AC wifi on separate cores
+	set_irq_affinity eth0 1
+	set_irq_affinity wifi0 1
 
-case "$board" in
-fritz4040)
-  	set_irq_affinity edma_eth_tx4 2
-	set_irq_affinity edma_eth_tx5 2
-	set_irq_affinity edma_eth_tx6 2
-	set_irq_affinity edma_eth_tx7 2
-	set_irq_affinity edma_eth_rx2 2
-	set_irq_affinity edma_eth_tx8 4
-	set_irq_affinity edma_eth_tx9 4
-	set_irq_affinity edma_eth_tx10 4
-	set_irq_affinity edma_eth_tx11 4
-	set_irq_affinity edma_eth_rx4 4
-	set_irq_affinity edma_eth_tx12 8
-	set_irq_affinity edma_eth_tx13 8
-	set_irq_affinity edma_eth_tx14 8
-	set_irq_affinity edma_eth_tx15 8
-	set_irq_affinity edma_eth_rx6 8
-	set_irq_affinity wifi0 2
-	set_irq_affinity wifi1 4
-	set_irq_affinity wifi2 8
-	;;
-ap148 |\
-c2600 |\
-db149 |\
-d7800 |\
-ea8500 |\
-nbg6817 |\
-r7500 |\
-r7500v2 |\
-r7800 |\
-vr2600v)
-  set_irq_affinity eth0 2
-	set_irq_affinity eth1 2
-	set_irq_affinity wifi0 2
-	;;
-*)
-	echo "Unsupported hardware. CPU affinity is not adjusted."
-	;;
-esac
+	# LAN and 802.11b/g/n on separate cores (and balanced - one wifi chip per core, one network chip per core)
+	set_irq_affinity eth1 1
+	set_irq_affinity wifi1 2
 }
