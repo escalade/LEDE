@@ -22,10 +22,6 @@ boot() {
     touch /etc/.vpn
   }
 
-  # Force all DNS requests to go through dnsmasq
-  iptables -t nat -A prerouting_rule -p udp --dport 53 -j REDIRECT
-  iptables -t nat -A prerouting_rule -p tcp --dport 53 -j REDIRECT
-
   # Redirect OpenVPN requests for the WAN address to the LAN address - TLS handshake fails with UDP without it
   . /lib/functions/network.sh
   network_get_ipaddr wanip wan

@@ -137,6 +137,33 @@ set firewall.@redirect[-1].reflection='0'
 set firewall.@redirect[-1].enabled='0'
 
 add firewall redirect
+set firewall.@redirect[-1].name='Redirect-DNS-from-LAN-zone'
+set firewall.@redirect[-1].src='lan'
+set firewall.@redirect[-1].src_dport='53'
+set firewall.@redirect[-1].dest_port='53'
+set firewall.@redirect[-1].target='DNAT'
+set firewall.@redirect[-1].reflection='0'
+set firewall.@redirect[-1].enabled='1'
+
+add firewall redirect
+set firewall.@redirect[-1].name='Redirect-DNS-from-Tor-zone'
+set firewall.@redirect[-1].src='tor'
+set firewall.@redirect[-1].src_dport='53'
+set firewall.@redirect[-1].dest_port='53'
+set firewall.@redirect[-1].target='DNAT'
+set firewall.@redirect[-1].reflection='0'
+set firewall.@redirect[-1].enabled='1'
+
+add firewall redirect
+set firewall.@redirect[-1].name='Redirect-DNS-from-VPN-zone'
+set firewall.@redirect[-1].src='vpn'
+set firewall.@redirect[-1].src_dport='53'
+set firewall.@redirect[-1].dest_port='53'
+set firewall.@redirect[-1].target='DNAT'
+set firewall.@redirect[-1].reflection='0'
+set firewall.@redirect[-1].enabled='1'
+
+add firewall redirect
 set firewall.@redirect[-1].name='Redirect-traffic-from-VPN-zone-to-Tor-TransPort'
 set firewall.@redirect[-1].src='vpn'
 set firewall.@redirect[-1].src_dip='!192.168.1.0/24'
