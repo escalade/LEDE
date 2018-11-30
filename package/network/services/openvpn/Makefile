@@ -102,6 +102,7 @@ endef
 
 define Package/openvpn-$(BUILD_VARIANT)/conffiles
 /etc/config/openvpn
+/etc/openvpn.user
 endef
 
 define Package/openvpn-$(BUILD_VARIANT)/install
@@ -111,7 +112,9 @@ define Package/openvpn-$(BUILD_VARIANT)/install
 		$(1)/etc/init.d \
 		$(1)/etc/config \
 		$(1)/etc/openvpn \
-		$(1)/lib/upgrade/keep.d
+		$(1)/lib/upgrade/keep.d \
+		$(1)/usr/lib/openvpn \
+		$(1)/etc/hotplug.d/openvpn
 
 	$(INSTALL_BIN) \
 		$(PKG_INSTALL_DIR)/usr/sbin/openvpn \
@@ -120,6 +123,15 @@ define Package/openvpn-$(BUILD_VARIANT)/install
 	$(INSTALL_BIN) \
 		files/openvpn.init \
 		$(1)/etc/init.d/openvpn
+
+	$(INSTALL_BIN) \
+		files/usr/lib/openvpn/openvpn-hotplug \
+		$(1)/usr/lib/openvpn/openvpn-hotplug
+
+	$(INSTALL_DATA) \
+		files/etc/hotplug.d/openvpn/01-user \
+		$(1)/etc/hotplug.d/openvpn/01-user
+
 	$(INSTALL_DATA) \
 		files/openvpn.options \
 		$(1)/usr/share/openvpn/openvpn.options

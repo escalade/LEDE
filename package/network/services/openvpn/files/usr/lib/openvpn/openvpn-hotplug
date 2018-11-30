@@ -1,0 +1,8 @@
+#!/bin/sh
+
+ACTION=$1
+shift
+INSTANCE=$1
+shift
+
+env -i ACTION=$ACTION INSTANCE=$INSTANCE /sbin/hotplug-call openvpn "$*"
