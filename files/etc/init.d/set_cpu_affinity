@@ -1,5 +1,5 @@
 #!/bin/sh /etc/rc.common
-# First start irqbalance with the --oneshot option
+# First start irqbalance
 # Try to balance manually both eth to core2 and wifi0 to core2 ifthey are not balanced correctly
 # System -> startup -> Local Startup
 #  /etc/init.d/set_cpu_affinity
@@ -42,7 +42,7 @@ esac
 start() {
 	. /lib/functions.sh
 
-	/usr/sbin/irqbalance --oneshot --debug > /var/log/irqbalance.log
+	/usr/sbin/irqbalance
 
 	# WAN and 802.11AC wifi on separate cores
 	set_irq_affinity eth0 1
